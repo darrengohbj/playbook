@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Daily Links</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            color: #C4DED6;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .sync-status {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .sync-status.connected {
+            background: rgba(127, 169, 155, 0.3);
+            color: #C4DED6;
+        }
+
+        .sync-status.disconnected {
+            background: rgba(139, 69, 19, 0.3);
+            color: #E8C4B4;
+        }
+
+        .sync-status.local {
+            background: rgba(255, 193, 7, 0.3);
+            color: #FFE082;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            min-height: 100px;
+        }
+
+        .link-tile {
+            background: rgba(127, 169, 155, 0.25);
+            border: 2px solid rgba(127, 169, 155, 0.5);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+        }
+
+        .link-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #7FA99B, #5C8A7D);
+        }
+
+        .link-tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            background: rgba(127, 169, 155, 0.35);
+        }
+
+        .link-tile a {
+            text-decoration: none;
+            color: #E8F0ED;
+            display: block;
+        }
+
+        .link-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #E8F0ED;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .link-url {
+            font-size: 0.85rem;
+            color: rgba(228, 240, 237, 0.8);
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(139, 69, 19, 0.9);
+            color: #E8F0ED;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            padding: 0;
+            margin: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .delete-btn:hover {
+            background: #A0522D;
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: rgba(228, 240, 237, 0.8);
+            padding: 3rem;
+            font-style: italic;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .add-link-form {
+            background: rgba(127, 169, 155, 0.2);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(127, 169, 155, 0.4);
+            backdrop-filter: blur(8px);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            color: #E8F0ED;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(127, 169, 155, 0.4);
+            border-radius: 8px;
+            color: #E8F0ED;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #7FA99B;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        input::placeholder {
+            color: rgba(228, 240, 237, 0.6);
+        }
+
+        button {
+            background: #7FA99B;
+            color: #2A1A0A;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-top: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            background: #96BAAC;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(127, 169, 155, 0.6);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .links-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Daily Links</h1>
+        
+        <div id="syncStatus" class="sync-status local">
+            Loading...
+        </div>
+        
+        <div class="links-grid" id="linksGrid"></div>
+
+        <div class="add-link-form">
+            <div class="form-group">
+                <label for="linkTitle">Link Name</label>
+                <input type="text" id="linkTitle" placeholder="e.g., Gmail">
+            </div>
+            <div class="form-group">
+                <label for="linkUrl">URL</label>
+                <input type="url" id="linkUrl" placeholder="e.g., https://gmail.com">
+            </div>
+            <button onclick="addLink()" id="addButton">Add Link</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, push, remove, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // Firebase Configuration
+        // IMPORTANT: Replace these values with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAGz1yXQ0FXZm40qPoP35_Zd_yK4d8LBLA",
+            authDomain: "playbook-68cb8.firebaseapp.com",
+            databaseURL: "https://playbook-68cb8-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "playbook-68cb8",
+            storageBucket: "playbook-68cb8.firebasestorage.app",
+            messagingSenderId: "282525499918",
+            appId: "1:282525499918:web:1e06e90d8852791bf9b25f"
+        };
+
+        let useFirebase = false;
+        let database = null;
+        let linksRef = null;
+        const statusElement = document.getElementById('syncStatus');
+        const addButton = document.getElementById('addButton');
+
+        // Check if Firebase is configured
+        const isFirebaseConfigured = !firebaseConfig.apiKey.includes('YOUR_');
+
+        if (isFirebaseConfigured) {
+            try {
+                // Initialize Firebase
+                const app = initializeApp(firebaseConfig);
+                database = getDatabase(app);
+                linksRef = ref(database, 'links');
+                useFirebase = true;
+
+                // Listen for connection state
+                const connectedRef = ref(database, '.info/connected');
+                onValue(connectedRef, (snapshot) => {
+                    const isConnected = snapshot.val() === true;
+                    if (isConnected) {
+                        statusElement.textContent = '✓ Synced across devices';
+                        statusElement.className = 'sync-status connected';
+                    } else {
+                        statusElement.textContent = '⚠ Offline - Changes will sync when online';
+                        statusElement.className = 'sync-status disconnected';
+                    }
+                });
+
+                // Listen for real-time updates
+                onValue(linksRef, (snapshot) => {
+                    const data = snapshot.val();
+                    renderLinks(data, true);
+                });
+
+                console.log('Firebase initialized successfully');
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                useFirebase = false;
+                initLocalStorage();
+            }
+        } else {
+            initLocalStorage();
+        }
+
+        function initLocalStorage() {
+            statusElement.textContent = '📱 Local storage only - Configure Firebase for cross-device sync';
+            statusElement.className = 'sync-status local';
+            addButton.disabled = false;
+            
+            // Load from localStorage
+            const localLinks = JSON.parse(localStorage.getItem('dailyLinks')) || [];
+            renderLinks(localLinks, false);
+        }
+
+        function renderLinks(data, isFirebaseData) {
+            const grid = document.getElementById('linksGrid');
+            
+            let linksArray = [];
+
+            if (isFirebaseData) {
+                // Firebase data
+                if (!data) {
+                    grid.innerHTML = '<div class="empty-state">No links yet. Add your first link below!</div>';
+                    return;
+                }
+
+                linksArray = Object.entries(data).map(([key, value]) => ({
+                    id: key,
+                    ...value
+                }));
+
+                // Sort by timestamp (newest first)
+                linksArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            } else {
+                // localStorage data
+                if (!data || data.length === 0) {
+                    grid.innerHTML = '<div class="empty-state">No links yet. Add your first link below!</div>';
+                    return;
+                }
+
+                linksArray = data.map((link, index) => ({
+                    id: index,
+                    ...link
+                }));
+            }
+
+            grid.innerHTML = linksArray.map(link => `
+                <div class="link-tile">
+                    <button class="delete-btn" onclick="deleteLink('${link.id}')" title="Delete link">×</button>
+                    <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer">
+                        <div class="link-title">${escapeHtml(link.title)}</div>
+                        <div class="link-url">${escapeHtml(link.url)}</div>
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        window.addLink = function() {
+            const title = document.getElementById('linkTitle').value.trim();
+            const url = document.getElementById('linkUrl').value.trim();
+
+            if (!title || !url) {
+                alert('Please fill in both fields');
+                return;
+            }
+
+            let formattedUrl = url;
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                formattedUrl = 'https://' + url;
+            }
+
+            const linkData = {
+                title: title,
+                url: formattedUrl,
+                timestamp: Date.now()
+            };
+
+            if (useFirebase && linksRef) {
+                // Add to Firebase
+                const newLinkRef = push(linksRef);
+                set(newLinkRef, linkData);
+            } else {
+                // Add to localStorage
+                const links = JSON.parse(localStorage.getItem('dailyLinks')) || [];
+                links.push(linkData);
+                localStorage.setItem('dailyLinks', JSON.stringify(links));
+                renderLinks(links, false);
+            }
+
+            // Clear input fields
+            document.getElementById('linkTitle').value = '';
+            document.getElementById('linkUrl').value = '';
+        };
+
+        window.deleteLink = function(linkId) {
+            if (confirm('Delete this link?')) {
+                if (useFirebase && linksRef) {
+                    // Delete from Firebase
+                    const linkRef = ref(database, `links/${linkId}`);
+                    remove(linkRef);
+                } else {
+                    // Delete from localStorage
+                    const links = JSON.parse(localStorage.getItem('dailyLinks')) || [];
+                    links.splice(parseInt(linkId), 1);
+                    localStorage.setItem('dailyLinks', JSON.stringify(links));
+                    renderLinks(links, false);
+                }
+            }
+        };
+
+        // Keyboard shortcuts
+        document.getElementById('linkTitle').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('linkUrl').focus();
+            }
+        });
+
+        document.getElementById('linkUrl').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                window.addLink();
+            }
+        });
+    </script>
+</body>
+</html>
